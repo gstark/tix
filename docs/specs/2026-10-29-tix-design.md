@@ -297,13 +297,21 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 │   ├── blockers.ts
 │   └── projects.ts
 ├── src/
-│   ├── index.ts         # Routes to CLI or MCP
+│   ├── index.ts         # Entry point. Plan 3 adds the route to MCP
+│   ├── errors.ts        # TixError and exit codes
 │   ├── client.ts        # ConvexHttpClient, token, error mapping
 │   ├── config.ts
 │   ├── project.ts
+│   ├── git.ts           # Remote URL and commit data
 │   ├── format.ts        # Tree and detail output
 │   ├── plan.ts
-│   ├── cli/             # One file for each command
+│   ├── test.setup.ts    # Test fixtures and runCli
+│   ├── cli/
+│   │   ├── command.ts   # Command type and option helpers
+│   │   ├── help.ts
+│   │   ├── main.ts      # Argument parsing and exit codes
+│   │   ├── commands.ts  # Command list and the help command
+│   │   └── <command>.ts # One file for each command
 │   └── mcp/server.ts
 ├── plugins/tix/skills/
 │   ├── tix/SKILL.md
@@ -331,7 +339,8 @@ A local dex checkout is at `/home/dev/dex`. Use these files as a reference. Do n
 - Node 24, TypeScript, pnpm.
 - Runtime dependencies: `convex`, `@modelcontextprotocol/sdk`, `zod`, `smol-toml`.
 - Development dependencies: `typescript`, `vitest`, `convex-test`, `@edge-runtime/vm`, `@types/node`.
-- `tsc` builds `src/` to `dist/`.
+- Node 24 runs `src/index.ts` directly with type stripping. There is no build step and no `dist/`.
+- `tsc` only checks types (`pnpm typecheck`).
 
 ## Testing
 
@@ -344,7 +353,7 @@ Tests must sit next to their source files (`foo.ts` and `foo.test.ts`).
 ## Machine Setup
 
 1. Clone the repository.
-2. Run `pnpm install`, `pnpm build`, and `pnpm link`.
+2. Run `pnpm install` and `pnpm link`.
 3. Run `npx convex run tokens:create '{"name":"<machine>"}'` from any machine with Convex access.
 4. Run `tix login --url <url> --token <token>`.
 5. Add `tix mcp` to the MCP configuration of the agent.
