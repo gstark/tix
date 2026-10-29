@@ -1,6 +1,9 @@
 # tix setup. Run `just` to list the recipes.
 
-team := "your-team"
+set dotenv-load
+
+# The Convex team slug. Set TIX_TEAM in .env, or run `just team=<slug> <recipe>`.
+team := env("TIX_TEAM", "")
 project := "tix"
 convex := "pnpm exec convex"
 
@@ -25,6 +28,10 @@ check-login:
 check-team: check-login
     #!/usr/bin/env bash
     set -euo pipefail
+    if [ -z "{{team}}" ]; then
+      echo "Set TIX_TEAM=<team slug> in .env, or run: just team=<team slug> setup" >&2
+      exit 1
+    fi
     status=$({{convex}} login status 2>&1)
     if ! grep -qF '({{team}})' <<<"$status"; then
       echo "This Convex login cannot reach team {{team}}." >&2

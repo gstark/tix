@@ -350,12 +350,13 @@ Tests must sit next to their source files (`foo.ts` and `foo.test.ts`).
 
 ## Machine Setup
 
-The Convex project `tix` belongs to the team `your-team`.
+The Convex project `tix` belongs to the team in `TIX_TEAM`.
 
 Backend, once:
 
-1. Log in to Convex with the account that owns `your-team`: `pnpm exec convex login`.
-2. Run `just setup`. It checks the login and the team, links the project, deploys, and prints the production URL.
+1. Put `TIX_TEAM=<team slug>` in `.env`. Git ignores this file.
+2. Log in to Convex with the account that owns the team: `pnpm exec convex login`.
+3. Run `just setup`. It checks the login and the team, links the project, deploys, and prints the production URL.
 
 Each machine:
 

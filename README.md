@@ -35,8 +35,9 @@ Do this once:
 
 1. Clone the repository.
 2. Run `pnpm install`.
-3. Log in to Convex: `pnpm exec convex login`.
-4. Run `just setup`. It prints the production URL.
+3. Put your Convex team slug in `.env`: `TIX_TEAM=<team slug>`. Git ignores this file.
+4. Log in to Convex: `pnpm exec convex login`.
+5. Run `just setup`. It prints the production URL.
 
 Run `just` to list the recipes.
 
@@ -50,4 +51,13 @@ The design is in `docs/specs/2026-10-29-tix-design.md`.
 
 ## Credits
 
-`tix` is inspired by the implementation of [dex](https://github.com/dcramer/dex) by David Cramer.
+`tix` is inspired by [dex](https://github.com/dcramer/dex), the task tracker for agents by [David Cramer](https://github.com/dcramer). dex showed the model that tix keeps:
+- Tasks are tickets, with a name, a description, and a result.
+- Agents use a CLI, an [MCP](https://modelcontextprotocol.io) server, and skills.
+- Plans become trees of tasks.
+
+`tix` moves the storage to [Convex](https://www.convex.dev), so all machines share the same tasks. Thank you, David.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
