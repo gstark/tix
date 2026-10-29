@@ -129,7 +129,7 @@ A good result:
 Added JWT verification middleware in src/auth/middleware.ts.
 Tokens with an expired exp claim return 401. The secret comes from JWT_SECRET.
 Decision: verify in middleware, not in each route, so new routes are safe by default.
-Verification: pnpm test: 48 passed. pnpm typecheck: no errors.
+Verification: bun run test: 48 passed. bun run typecheck: no errors.
 Manual: curl with an expired token returned 401.
 Follow-up: created task for token refresh.
 ```

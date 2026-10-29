@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import { main } from "./cli/main.ts";
 import { convexClient } from "./client.ts";
 import { loadConfig } from "./config.ts";

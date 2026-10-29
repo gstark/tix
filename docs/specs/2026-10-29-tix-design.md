@@ -334,11 +334,11 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 
 ## Stack
 
-- Node 24, TypeScript, pnpm.
+- Bun 1.3, TypeScript.
 - Runtime dependencies: `convex`, `@modelcontextprotocol/sdk`, `zod`, `smol-toml`.
-- Development dependencies: `typescript`, `vitest`, `convex-test`, `@edge-runtime/vm`, `@types/node`.
-- Node 24 runs `src/index.ts` directly with type stripping. There is no build step and no `dist/`.
-- `tsc` only checks types (`pnpm typecheck`).
+- Development dependencies: `typescript`, `vitest`, `convex-test`, `@edge-runtime/vm`, `@types/bun`.
+- Bun runs `src/index.ts` directly. There is no build step and no `dist/`.
+- `tsc` only checks types (`bun run typecheck`).
 
 ## Testing
 
@@ -355,7 +355,7 @@ The Convex project `tix` belongs to the team in `TIX_TEAM`.
 Backend, once:
 
 1. Put `TIX_TEAM=<team slug>` in `.env`. Git ignores this file.
-2. Log in to Convex with the account that owns the team: `pnpm exec convex login`.
+2. Log in to Convex with the account that owns the team: `bunx convex login`.
 3. Run `just setup`. It checks the login and the team, links the project, deploys, and prints the production URL.
 
 Each machine:

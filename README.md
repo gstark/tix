@@ -5,12 +5,38 @@
 `tix` has:
 
 - A CLI. Run `tix help` to see the commands.
+- A live board in the terminal. Run `tix tui` to open it.
 - An MCP server. Run `tix mcp` to start it on stdio.
 - A Claude Code plugin with the `tix` and `tix-plan` skills.
 
+## Board
+
+`tix tui` shows the tasks of the current project. Outside a git repository, or with `--all-projects`, it shows all projects. Convex sends each change at once, so you see the work of agents while they do it. When a status changes, its cell flips like a departures board.
+
+The left pane shows the task tree. The right pane shows the selected task, with the description and the result in Markdown. You can click rows, filters, links, and buttons, and scroll with the mouse wheel.
+
+| Keys | Action |
+| --- | --- |
+| `j` `k` `g` `G` | Select a task |
+| `h` `l` `enter` | Close or open a subtree |
+| `tab` | Move between the board and the ticket |
+| `1` `2` `3` `4` | Show open, ready, all, or closed tasks |
+| `/` | Find tasks by name or ID |
+| `p` | Choose the project |
+| `s` `d` `o` | Start, close, or reopen the task |
+| `n` `a` | Create a task or a subtask |
+| `e` `E` | Edit the task, or edit the description in `$EDITOR` |
+| `b` `u` | Add or remove a blocker |
+| `x` | Delete the task |
+| `y` | Copy the short ID |
+| `?` | Show all keys |
+| `q` | Quit |
+
+Set `TIX_MOTION=off` to turn off the flip animation.
+
 ## Install
 
-The install needs git, Node 24 or later, and pnpm.
+The install needs git and [Bun](https://bun.com) 1.3 or later.
 
 1. Run the install script:
 
@@ -34,18 +60,18 @@ Run the install script again to update tix. You can set these variables:
 Do this once:
 
 1. Clone the repository.
-2. Run `pnpm install`.
+2. Run `bun install`.
 3. Put your Convex team slug in `.env`: `TIX_TEAM=<team slug>`. Git ignores this file.
-4. Log in to Convex: `pnpm exec convex login`.
+4. Log in to Convex: `bunx convex login`.
 5. Run `just setup`. It prints the production URL.
 
 Run `just` to list the recipes.
 
 ## Development
 
-- `pnpm test` runs the tests.
-- `pnpm typecheck` runs the typecheck.
-- Node runs the TypeScript source directly. There is no build.
+- `bun run test` runs the tests.
+- `bun run typecheck` runs the typecheck.
+- Bun runs the TypeScript source directly. There is no build.
 
 The design is in `docs/specs/2026-10-29-tix-design.md`.
 

@@ -14,6 +14,7 @@ import { projects } from "./projects.ts";
 import { reopen } from "./reopen.ts";
 import { show } from "./show.ts";
 import { start } from "./start.ts";
+import { tui } from "./tui.ts";
 import { unblock } from "./unblock.ts";
 
 const help: Command = {
@@ -28,6 +29,7 @@ const help: Command = {
 
 /** All commands, in the order that `tix help` shows them. */
 export const commands: Command[] = [
+  tui,
   list,
   create,
   show,

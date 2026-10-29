@@ -5,7 +5,7 @@ set dotenv-load
 # The Convex team slug. Set TIX_TEAM in .env, or run `just team=<slug> <recipe>`.
 team := env("TIX_TEAM", "")
 project := "tix"
-convex := "pnpm exec convex"
+convex := "bunx convex"
 
 # List the recipes
 default:
@@ -73,7 +73,7 @@ tokens: link
 
 # Each machine: put tix on the PATH
 install:
-    pnpm install --frozen-lockfile
+    bun install --frozen-lockfile
     /bin/mkdir -p ~/.local/bin
     /bin/ln -sfn {{justfile_directory()}}/src/index.ts ~/.local/bin/tix
     @echo "Installed ~/.local/bin/tix. Next: tix login --url <url> --token <token>"

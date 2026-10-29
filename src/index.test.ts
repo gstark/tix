@@ -8,7 +8,7 @@ const run = promisify(execFile);
 const entry = fileURLToPath(new URL("./index.ts", import.meta.url));
 
 describe("src/index.ts", () => {
-  it("runs under Node with no build step", async () => {
+  it("runs under Bun with no build step", async () => {
     const { stdout, stderr } = await run(process.execPath, [entry, "help"]);
     expect(stdout).toContain("Usage: tix <command>");
     expect(stderr).toBe("");

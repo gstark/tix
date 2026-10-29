@@ -6,18 +6,22 @@
   "type": "module",
   "scripts": {
     "codegen": "convex dev --once --typecheck disable",
-    "typecheck": "tsc --noEmit -p convex && tsc --noEmit -p .",
-    "test": "vitest run"
+    "typecheck": "bun --bun tsc --noEmit -p convex && bun --bun tsc --noEmit -p .",
+    "test": "bun --bun vitest run"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
+    "@opentui/core": "^0.8.0",
+    "@opentui/react": "^0.8.0",
     "convex": "^1.48.0",
+    "react": "^19.3.1",
     "smol-toml": "^1.9.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
-    "@types/node": "^24.19.2",
+    "@types/bun": "^1.4.4",
+    "@types/react": "^19.3.0",
     "convex-test": "^0.0.66",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",

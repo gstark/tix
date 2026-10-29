@@ -15,10 +15,9 @@ main() {
   local bin="$HOME/.local/bin"
 
   need git
-  need pnpm
-  need node
-  if ! node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 24 ? 0 : 1)'; then
-    fail "tix needs Node 24 or later. This machine has Node $(node --version)."
+  need bun
+  if ! bun -e 'const [major, minor] = Bun.version.split(".").map(Number); process.exit(major > 1 || minor >= 3 ? 0 : 1)'; then
+    fail "tix needs Bun 1.3 or later. This machine has Bun $(bun --version)."
   fi
 
   if [ -d "$dir/.git" ]; then
@@ -30,7 +29,7 @@ main() {
     git clone --quiet "$repo" "$dir"
   fi
 
-  (cd "$dir" && pnpm install --frozen-lockfile --prod --silent)
+  (cd "$dir" && bun install --frozen-lockfile --production --silent)
   mkdir -p "$bin"
   ln -sfn "$dir/src/index.ts" "$bin/tix"
   echo "Installed $bin/tix"
