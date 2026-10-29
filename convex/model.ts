@@ -1,6 +1,8 @@
+import type { Infer } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { fail } from "./errors";
+import type { commitValidator } from "./schema";
 
 const MAX_TEXT = 50_000;
 // Depth of the lowest allowed level: epic 0, task 1, subtask 2.
@@ -18,7 +20,7 @@ export type TaskView = {
   result: string | null;
   startedAt: number | null;
   completedAt: number | null;
-  commit: Doc<"tasks">["commit"] | null;
+  commit: Infer<typeof commitValidator> | null;
   createdAt: number;
   blockedBy: string[];
 };
@@ -163,10 +165,14 @@ export async function toView(ctx: QueryCtx, task: Doc<"tasks">, projectKey: stri
   };
 }
 
-export async function viewOf(ctx: QueryCtx, task: Doc<"tasks">): Promise<TaskView> {
+export async function projectKeyOf(ctx: QueryCtx, task: Doc<"tasks">): Promise<string> {
   const project = await ctx.db.get(task.projectId);
   if (!project) fail("NOT_FOUND", `The project of task ${task.shortId} does not exist`);
-  return toView(ctx, task, project.key);
+  return project.key;
+}
+
+export async function viewOf(ctx: QueryCtx, task: Doc<"tasks">): Promise<TaskView> {
+  return toView(ctx, task, await projectKeyOf(ctx, task));
 }
 
 export async function summaryOf(ctx: QueryCtx, taskId: Id<"tasks">): Promise<TaskSummary | null> {

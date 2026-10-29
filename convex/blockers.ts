@@ -9,9 +9,8 @@ import { findTask, viewOf } from "./model";
 async function findRow(ctx: QueryCtx, blockedId: Id<"tasks">, blockerId: Id<"tasks">) {
   return ctx.db
     .query("blockers")
-    .withIndex("by_blocked", (q) => q.eq("blockedId", blockedId))
-    .filter((q) => q.eq(q.field("blockerId"), blockerId))
-    .first();
+    .withIndex("by_blocked", (q) => q.eq("blockedId", blockedId).eq("blockerId", blockerId))
+    .unique();
 }
 
 /** True if `start` already waits on `target` through a chain of blockers. */

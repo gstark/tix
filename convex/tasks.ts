@@ -14,6 +14,7 @@ import {
   findProject,
   findTask,
   newShortId,
+  projectKeyOf,
   summaryOf,
   toView,
   viewOf,
@@ -243,9 +244,7 @@ export const list = query({
     for (const task of await tasksFor(ctx, projectId, args.filter)) {
       let key = keys.get(task.projectId);
       if (key === undefined) {
-        const project = await ctx.db.get(task.projectId);
-        if (!project) fail("NOT_FOUND", `The project of task ${task.shortId} does not exist`);
-        key = project.key;
+        key = await projectKeyOf(ctx, task);
         keys.set(task.projectId, key);
       }
       views.push(await toView(ctx, task, key));

@@ -62,3 +62,26 @@ describe("requireMachine", () => {
     await expectCode(t.query(api.projects.list, { token }), "UNAUTHORIZED");
   });
 });
+
+describe("public functions", () => {
+  const BAD = "tix_unknown";
+  const ID = "zzzzzzzz";
+  const cases: [string, (t: Awaited<ReturnType<typeof setup>>["t"]) => Promise<unknown>][] = [
+    ["tasks.create", (t) => t.mutation(api.tasks.create, { token: BAD, projectKey: "p", name: "n" })],
+    ["tasks.get", (t) => t.query(api.tasks.get, { token: BAD, id: ID })],
+    ["tasks.update", (t) => t.mutation(api.tasks.update, { token: BAD, id: ID })],
+    ["tasks.start", (t) => t.mutation(api.tasks.start, { token: BAD, id: ID })],
+    ["tasks.complete", (t) => t.mutation(api.tasks.complete, { token: BAD, id: ID })],
+    ["tasks.reopen", (t) => t.mutation(api.tasks.reopen, { token: BAD, id: ID })],
+    ["tasks.remove", (t) => t.mutation(api.tasks.remove, { token: BAD, id: ID })],
+    ["tasks.list", (t) => t.query(api.tasks.list, { token: BAD, filter: "all", allProjects: true })],
+    ["blockers.add", (t) => t.mutation(api.blockers.add, { token: BAD, blocked: ID, blocker: ID })],
+    ["blockers.remove", (t) => t.mutation(api.blockers.remove, { token: BAD, blocked: ID, blocker: ID })],
+    ["projects.list", (t) => t.query(api.projects.list, { token: BAD })],
+  ];
+
+  it.each(cases)("%s rejects an unknown token", async (_name, call) => {
+    const { t } = await setup();
+    await expectCode(call(t), "UNAUTHORIZED");
+  });
+});

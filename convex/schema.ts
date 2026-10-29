@@ -35,7 +35,7 @@ export default defineSchema({
     blockedId: v.id("tasks"),
   })
     .index("by_blocker", ["blockerId"])
-    .index("by_blocked", ["blockedId"]),
+    .index("by_blocked", ["blockedId", "blockerId"]),
 
   machineTokens: defineTable({
     name: v.string(),
