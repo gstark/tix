@@ -19,7 +19,7 @@ type CreateOptions = {
 
 export async function setup() {
   const t = convexTest(schema, modules);
-  const token = await t.mutation(internal.tokens.create, { name: "test" });
+  const token = await t.action(internal.tokens.create, { name: "test" });
   const create = (name: string, options: CreateOptions = {}) =>
     t.mutation(api.tasks.create, { token, projectKey: PROJECT, name, ...options });
   return { t, token, create };

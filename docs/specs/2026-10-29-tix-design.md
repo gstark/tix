@@ -116,7 +116,7 @@ The server must enforce these rules in every mutation:
 1. A subtask tree must be 3 levels deep at most: epic, task, and subtask.
 2. A parent must be in the same project as its child.
 3. A task cannot become its own ancestor.
-4. A task must not close while it has open children.
+4. A task must not close while it has open children. Other mutations can put an open task under a closed parent. For example, `reopen` does not reopen the parent.
 5. A blocker must be in the same project as the blocked task.
 6. A task must not block itself.
 7. A new blocker must not create a cycle.
@@ -135,11 +135,11 @@ A task is "ready" when these conditions are true:
   - It hashes the token with SHA-256 through Web Crypto.
   - It finds the row through `by_hash`.
   - It throws `UNAUTHORIZED` if the row is missing or has `revokedAt`.
-- `convex/tokens.ts` must export internal mutations only:
-  - `create({ name })` makes a raw token `tix_` followed by 32 random bytes in base64url. It stores the hash and returns the raw token once.
+- `convex/tokens.ts` must export internal functions only:
+  - `create({ name })` is an internal action, because Convex seeds random values in mutations. It makes a raw token `tix_` followed by 32 random bytes in base64url. It stores the hash through an internal mutation and returns the raw token once.
   - `revoke({ name })` sets `revokedAt`.
   - `list()` returns names, `createdAt`, and `revokedAt`. It never returns hashes.
-- You run the token mutations with `npx convex run`.
+- You run the token functions with `npx convex run`.
 
 ## Convex Functions
 
@@ -159,6 +159,8 @@ All functions take `token`. Task references use `shortId`.
 | `list` | query | `projectKey?`, `filter` (`open`, `closed`, `all`, `ready`), `allProjects?` |
 
 - `list` must return tasks with their project key, `parentShortId`, and `blockedBy` short IDs. The client builds the tree.
+- `list` must not return `description`. The client calls `get` for the full task.
+- `list` returns an empty list for an unknown `projectKey`. The first `create` makes the project row.
 - If `allProjects` is false, `projectKey` is required.
 
 ### `convex/blockers.ts`
@@ -181,7 +183,7 @@ The server must throw `ConvexError` with data `{ code, message }`.
 | Code | Cause |
 |---|---|
 | `UNAUTHORIZED` | The token is missing, unknown, or revoked. |
-| `NOT_FOUND` | The task or project does not exist. |
+| `NOT_FOUND` | The task does not exist, or the project of a task does not exist. |
 | `INVALID_INPUT` | A field is out of range. |
 | `MAX_DEPTH` | The subtask tree would exceed 3 levels. |
 | `PARENT_CYCLE` | The task would become its own ancestor. |

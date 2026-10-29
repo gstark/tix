@@ -4,7 +4,7 @@ import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { requireMachine } from "./auth";
 import { fail } from "./errors";
-import type { TaskSummary, TaskView } from "./model";
+import type { TaskListItem, TaskSummary } from "./model";
 import {
   checkParent,
   checkPriority,
@@ -228,7 +228,7 @@ export const list = query({
     filter: filterValidator,
     allProjects: v.optional(v.boolean()),
   },
-  handler: async (ctx, args): Promise<TaskView[]> => {
+  handler: async (ctx, args): Promise<TaskListItem[]> => {
     await requireMachine(ctx, args.token);
     const keys = new Map<Id<"projects">, string>();
     let projectId: Id<"projects"> | null = null;
@@ -240,15 +240,16 @@ export const list = query({
       keys.set(project._id, project.key);
     }
 
-    const views: TaskView[] = [];
+    const items: TaskListItem[] = [];
     for (const task of await tasksFor(ctx, projectId, args.filter)) {
       let key = keys.get(task.projectId);
       if (key === undefined) {
         key = await projectKeyOf(ctx, task);
         keys.set(task.projectId, key);
       }
-      views.push(await toView(ctx, task, key));
+      const { description: _description, ...item } = await toView(ctx, task, key);
+      items.push(item);
     }
-    return args.filter === "ready" ? views.filter((view) => view.blockedBy.length === 0) : views;
+    return args.filter === "ready" ? items.filter((item) => item.blockedBy.length === 0) : items;
   },
 });

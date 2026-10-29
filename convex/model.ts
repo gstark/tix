@@ -25,6 +25,9 @@ export type TaskView = {
   blockedBy: string[];
 };
 
+/** A task in `tasks.list`. The description is left out to keep the list small. */
+export type TaskListItem = Omit<TaskView, "description">;
+
 export type TaskSummary = { shortId: string; name: string; completed: boolean };
 
 export function checkText(field: string, value: string, min: number): void {

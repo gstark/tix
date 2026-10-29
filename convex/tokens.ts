@@ -1,6 +1,7 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import type { QueryCtx } from "./_generated/server";
-import { internalMutation, internalQuery } from "./_generated/server";
+import { internalAction, internalMutation, internalQuery } from "./_generated/server";
 import { sha256Hex } from "./auth";
 import { fail } from "./errors";
 
@@ -18,19 +19,23 @@ async function activeTokens(ctx: QueryCtx, name: string) {
   return rows.filter((row) => row.revokedAt === undefined);
 }
 
-export const create = internalMutation({
+// An action, because Convex seeds random values in mutations.
+export const create = internalAction({
   args: { name: v.string() },
-  handler: async (ctx, { name }) => {
+  handler: async (ctx, { name }): Promise<string> => {
+    const token = randomToken();
+    await ctx.runMutation(internal.tokens.store, { name, tokenHash: await sha256Hex(token) });
+    return token;
+  },
+});
+
+export const store = internalMutation({
+  args: { name: v.string(), tokenHash: v.string() },
+  handler: async (ctx, { name, tokenHash }) => {
     if ((await activeTokens(ctx, name)).length > 0) {
       fail("INVALID_INPUT", `An active token for "${name}" already exists`);
     }
-    const token = randomToken();
-    await ctx.db.insert("machineTokens", {
-      name,
-      tokenHash: await sha256Hex(token),
-      createdAt: Date.now(),
-    });
-    return token;
+    await ctx.db.insert("machineTokens", { name, tokenHash, createdAt: Date.now() });
   },
 });
 

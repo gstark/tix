@@ -62,6 +62,14 @@ describe("tasks.list", () => {
     expect(listedChild).toMatchObject({ parentShortId: epic.shortId, blockedBy: [epic.shortId] });
   });
 
+  it("leaves out the description", async () => {
+    const { t, token, create } = await setup();
+    await create("Plan", { description: "Long plan text" });
+    const [task] = await t.query(api.tasks.list, { token, projectKey: PROJECT, filter: "open" });
+    expect(task.name).toBe("Plan");
+    expect(task).not.toHaveProperty("description");
+  });
+
   it("returns only tasks of the given project", async () => {
     const { t, token, create } = await setup();
     await create("Mine");

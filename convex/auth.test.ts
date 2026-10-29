@@ -24,13 +24,13 @@ describe("machine tokens", () => {
 
   it("rejects a second active token with the same name", async () => {
     const { t } = await setup();
-    await expectCode(t.mutation(internal.tokens.create, { name: "test" }), "INVALID_INPUT");
+    await expectCode(t.action(internal.tokens.create, { name: "test" }), "INVALID_INPUT");
   });
 
   it("allows a new token after a revoke", async () => {
     const { t } = await setup();
     await t.mutation(internal.tokens.revoke, { name: "test" });
-    const token = await t.mutation(internal.tokens.create, { name: "test" });
+    const token = await t.action(internal.tokens.create, { name: "test" });
     expect(await t.query(api.projects.list, { token })).toEqual([]);
   });
 
