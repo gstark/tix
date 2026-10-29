@@ -126,6 +126,7 @@ export const start = mutation({
     await requireMachine(ctx, token);
     const task = await findTask(ctx, id);
     if (task.completed) fail("INVALID_INPUT", `Task ${task.shortId} is closed. Reopen it first`);
+    if (task.startedAt !== undefined) return viewOf(ctx, task);
     const patch = { startedAt: Date.now() };
     await ctx.db.patch(task._id, patch);
     return viewOf(ctx, { ...task, ...patch });
@@ -149,7 +150,7 @@ export const complete = mutation({
     }
     const patch: Partial<Pick<Doc<"tasks">, "completed" | "completedAt" | "result" | "commit">> = {
       completed: true,
-      completedAt: Date.now(),
+      completedAt: task.completedAt ?? Date.now(),
     };
     if (args.result !== undefined) patch.result = args.result;
     if (args.commit !== undefined) patch.commit = args.commit;
