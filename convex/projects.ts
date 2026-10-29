@@ -7,6 +7,16 @@ export const list = query({
   handler: async (ctx, { token }) => {
     await requireMachine(ctx, token);
     const projects = await ctx.db.query("projects").withIndex("by_key").collect();
-    return projects.map((project) => ({ key: project.key, openCount: 0 }));
+    return Promise.all(
+      projects.map(async (project) => {
+        const open = await ctx.db
+          .query("tasks")
+          .withIndex("by_project_completed_priority", (q) =>
+            q.eq("projectId", project._id).eq("completed", false),
+          )
+          .collect();
+        return { key: project.key, openCount: open.length };
+      }),
+    );
   },
 });
