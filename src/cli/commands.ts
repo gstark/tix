@@ -1,6 +1,7 @@
 import { TixError } from "../errors.ts";
 import type { Command } from "./command.ts";
 import { helpLines } from "./help.ts";
+import { list } from "./list.ts";
 import { projects } from "./projects.ts";
 
 const help: Command = {
@@ -14,4 +15,4 @@ const help: Command = {
 };
 
 /** All commands, in the order that `tix help` shows them. */
-export const commands: Command[] = [projects, help];
+export const commands: Command[] = [list, projects, help];
