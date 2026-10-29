@@ -8,6 +8,7 @@ import { done } from "./done.ts";
 import { edit } from "./edit.ts";
 import { list } from "./list.ts";
 import { login } from "./login.ts";
+import { mcp } from "./mcp.ts";
 import { plan } from "./plan.ts";
 import { projects } from "./projects.ts";
 import { reopen } from "./reopen.ts";
@@ -40,5 +41,6 @@ export const commands: Command[] = [
   plan,
   projects,
   login,
+  mcp,
   help,
 ];
