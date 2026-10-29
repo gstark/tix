@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "tix": { "command": "tix", "args": ["mcp"] }
+  }
+}
