@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as blockers from "../blockers.js";
 import type * as errors from "../errors.js";
 import type * as model from "../model.js";
 import type * as projects from "../projects.js";
@@ -23,6 +24,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  blockers: typeof blockers;
   errors: typeof errors;
   model: typeof model;
   projects: typeof projects;
