@@ -70,10 +70,12 @@ describe("tasks.create", () => {
     await expectCode(create("Too deep", { parent: subtask.shortId }), "MAX_DEPTH");
   });
 
-  it("rejects a parent in a different project", async () => {
-    const { create } = await setup();
+  it("rejects a parent in a different project and rolls back the new project row", async () => {
+    const { t, create } = await setup();
     const parent = await create("Parent", { projectKey: OTHER_PROJECT });
     await expectCode(create("Child", { parent: parent.shortId }), "CROSS_PROJECT");
+    const projects = await t.run((ctx) => ctx.db.query("projects").collect());
+    expect(projects.map((project) => project.key)).toEqual([OTHER_PROJECT]);
   });
 });
 
