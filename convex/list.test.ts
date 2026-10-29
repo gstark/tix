@@ -12,15 +12,30 @@ describe("tasks.list", () => {
     expect(tasks.map((task) => task.name)).toEqual(["One", "Two", "Three"]);
   });
 
-  it("filters by closed and all", async () => {
+  it("filters by closed and all, with open tasks first", async () => {
     const { t, token, create } = await setup();
-    const done = await create("Done");
-    await create("Open");
+    const done = await create("Done", { priority: 1 });
+    await create("Open", { priority: 5 });
     await t.mutation(api.tasks.complete, { token, id: done.shortId });
     const closed = await t.query(api.tasks.list, { token, projectKey: PROJECT, filter: "closed" });
     expect(closed.map((task) => task.name)).toEqual(["Done"]);
     const all = await t.query(api.tasks.list, { token, projectKey: PROJECT, filter: "all" });
-    expect(all.map((task) => task.name).sort()).toEqual(["Done", "Open"]);
+    expect(all.map((task) => task.name)).toEqual(["Open", "Done"]);
+  });
+
+  it("keeps a task out of ready while one of two blockers is open", async () => {
+    const { t, token, create } = await setup();
+    const first = await create("First");
+    const second = await create("Second");
+    const waiting = await create("Waiting");
+    await t.mutation(api.blockers.add, { token, blocked: waiting.shortId, blocker: first.shortId });
+    await t.mutation(api.blockers.add, { token, blocked: waiting.shortId, blocker: second.shortId });
+    await t.mutation(api.tasks.complete, { token, id: first.shortId });
+
+    const ready = await t.query(api.tasks.list, { token, projectKey: PROJECT, filter: "ready" });
+    expect(ready.map((task) => task.name)).toEqual(["Second"]);
+    const open = await t.query(api.tasks.list, { token, projectKey: PROJECT, filter: "open" });
+    expect(open.find((task) => task.shortId === waiting.shortId)?.blockedBy).toEqual([second.shortId]);
   });
 
   it("returns ready tasks: open and not blocked by an open task", async () => {
@@ -69,6 +84,18 @@ describe("tasks.list", () => {
     expect(tasks.map((task) => [task.name, task.projectKey]).sort()).toEqual([
       ["Mine", PROJECT],
       ["Theirs", OTHER_PROJECT],
+    ]);
+  });
+
+  it("returns open and closed tasks of all projects with filter all", async () => {
+    const { t, token, create } = await setup();
+    const done = await create("Done");
+    await create("Theirs", { projectKey: OTHER_PROJECT });
+    await t.mutation(api.tasks.complete, { token, id: done.shortId });
+    const tasks = await t.query(api.tasks.list, { token, filter: "all", allProjects: true });
+    expect(tasks.map((task) => [task.name, task.projectKey])).toEqual([
+      ["Theirs", OTHER_PROJECT],
+      ["Done", PROJECT],
     ]);
   });
 

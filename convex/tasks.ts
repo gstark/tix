@@ -229,20 +229,23 @@ export const list = query({
   },
   handler: async (ctx, args): Promise<TaskView[]> => {
     await requireMachine(ctx, args.token);
+    const keys = new Map<Id<"projects">, string>();
     let projectId: Id<"projects"> | null = null;
     if (!args.allProjects) {
       if (args.projectKey === undefined) fail("INVALID_INPUT", "projectKey is required without allProjects");
       const project = await findProject(ctx, args.projectKey);
       if (!project) return [];
       projectId = project._id;
+      keys.set(project._id, project.key);
     }
 
-    const keys = new Map<Id<"projects">, string>();
     const views: TaskView[] = [];
     for (const task of await tasksFor(ctx, projectId, args.filter)) {
       let key = keys.get(task.projectId);
       if (key === undefined) {
-        key = (await ctx.db.get(task.projectId))?.key ?? "";
+        const project = await ctx.db.get(task.projectId);
+        if (!project) fail("NOT_FOUND", `The project of task ${task.shortId} does not exist`);
+        key = project.key;
         keys.set(task.projectId, key);
       }
       views.push(await toView(ctx, task, key));
