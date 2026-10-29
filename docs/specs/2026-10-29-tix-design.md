@@ -310,6 +310,20 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 └── package.json         # bin: tix
 ```
 
+## Reference Source
+
+A local dex checkout is at `/home/dev/dex`. Use these files as a reference. Do not copy the dex storage, sync, or archive code.
+
+| tix file | dex reference |
+|---|---|
+| `src/project.ts` | `src/core/project-key.ts` |
+| `src/plan.ts` | `src/core/plan-parser.ts` |
+| `src/format.ts` | `src/cli/tree-display.ts`, `src/cli/formatting.ts`, `src/cli/colors.ts` |
+| `convex/tasks.ts` rules | `src/core/task-service.ts`, `src/core/task-relationships.ts` |
+| `src/mcp/server.ts` | `src/mcp/server.ts`, `src/mcp/tools/` |
+| `src/cli/` help text | `src/cli/help.ts` |
+| Agent skills | `plugins/dex/skills/dex/`, `plugins/dex/skills/dex-plan/` |
+
 ## Stack
 
 - Node 24, TypeScript, pnpm.
