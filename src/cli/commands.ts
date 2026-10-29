@@ -5,7 +5,12 @@ import { create } from "./create.ts";
 import { list } from "./list.ts";
 import { plan } from "./plan.ts";
 import { projects } from "./projects.ts";
+import { remove } from "./delete.ts";
+import { done } from "./done.ts";
+import { edit } from "./edit.ts";
+import { reopen } from "./reopen.ts";
 import { show } from "./show.ts";
+import { start } from "./start.ts";
 
 const help: Command = {
   name: "help",
@@ -18,4 +23,4 @@ const help: Command = {
 };
 
 /** All commands, in the order that `tix help` shows them. */
-export const commands: Command[] = [list, create, show, plan, projects, help];
+export const commands: Command[] = [list, create, show, edit, start, done, reopen, remove, plan, projects, help];
