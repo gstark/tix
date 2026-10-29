@@ -2,12 +2,14 @@ import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireMachine } from "./auth";
+import { fail } from "./errors";
 import type { TaskSummary } from "./model";
 import {
   checkParent,
   checkPriority,
   checkText,
   childrenOf,
+  descendantsOf,
   findProject,
   findTask,
   newShortId,
@@ -15,6 +17,7 @@ import {
   toView,
   viewOf,
 } from "./model";
+import { commitValidator } from "./schema";
 
 export const create = mutation({
   args: {
@@ -112,6 +115,55 @@ export const update = mutation({
       patch.parentId = parent._id;
     }
 
+    await ctx.db.patch(task._id, patch);
+    return viewOf(ctx, { ...task, ...patch });
+  },
+});
+
+export const start = mutation({
+  args: { token: v.string(), id: v.string() },
+  handler: async (ctx, { token, id }) => {
+    await requireMachine(ctx, token);
+    const task = await findTask(ctx, id);
+    if (task.completed) fail("INVALID_INPUT", `Task ${task.shortId} is closed. Reopen it first`);
+    const patch = { startedAt: Date.now() };
+    await ctx.db.patch(task._id, patch);
+    return viewOf(ctx, { ...task, ...patch });
+  },
+});
+
+export const complete = mutation({
+  args: {
+    token: v.string(),
+    id: v.string(),
+    result: v.optional(v.string()),
+    commit: v.optional(commitValidator),
+  },
+  handler: async (ctx, args) => {
+    await requireMachine(ctx, args.token);
+    const task = await findTask(ctx, args.id);
+    if (args.result !== undefined) checkText("result", args.result, 0);
+    const open = (await descendantsOf(ctx, task._id)).filter((child) => !child.completed);
+    if (open.length > 0) {
+      fail("OPEN_CHILDREN", `Task ${task.shortId} has ${open.length} open subtask(s)`);
+    }
+    const patch: Partial<Pick<Doc<"tasks">, "completed" | "completedAt" | "result" | "commit">> = {
+      completed: true,
+      completedAt: Date.now(),
+    };
+    if (args.result !== undefined) patch.result = args.result;
+    if (args.commit !== undefined) patch.commit = args.commit;
+    await ctx.db.patch(task._id, patch);
+    return viewOf(ctx, { ...task, ...patch });
+  },
+});
+
+export const reopen = mutation({
+  args: { token: v.string(), id: v.string() },
+  handler: async (ctx, { token, id }) => {
+    await requireMachine(ctx, token);
+    const task = await findTask(ctx, id);
+    const patch = { completed: false, completedAt: undefined };
     await ctx.db.patch(task._id, patch);
     return viewOf(ctx, { ...task, ...patch });
   },
