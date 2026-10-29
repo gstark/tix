@@ -334,7 +334,7 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 
 ## Stack
 
-- Bun 1.3, TypeScript.
+- Bun 1.4, TypeScript.
 - Runtime dependencies: `convex`, `@modelcontextprotocol/sdk`, `zod`, `smol-toml`.
 - Development dependencies: `typescript`, `vitest`, `convex-test`, `@edge-runtime/vm`, `@types/bun`.
 - Bun runs `src/index.ts` directly. There is no build step and no `dist/`.

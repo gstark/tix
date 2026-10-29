@@ -36,7 +36,7 @@ Set `TIX_MOTION=off` to turn off the flip animation.
 
 ## Install
 
-The install needs git and [Bun](https://bun.com) 1.3 or later.
+The install needs git and [Bun](https://bun.com) 1.4 or later. Run `bun upgrade` to update Bun.
 
 1. Run the install script:
 

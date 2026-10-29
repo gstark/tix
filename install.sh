@@ -16,8 +16,9 @@ main() {
 
   need git
   need bun
-  if ! bun -e 'const [major, minor] = Bun.version.split(".").map(Number); process.exit(major > 1 || minor >= 3 ? 0 : 1)'; then
-    fail "tix needs Bun 1.3 or later. This machine has Bun $(bun --version)."
+  # Bun 1.4 writes bun.lock version 2. Older Bun cannot read it.
+  if ! bun -e 'const [major, minor] = Bun.version.split(".").map(Number); process.exit(major > 1 || minor >= 4 ? 0 : 1)'; then
+    fail "tix needs Bun 1.4 or later. This machine has Bun $(bun --version). Run bun upgrade, then run this script again."
   fi
 
   if [ -d "$dir/.git" ]; then
@@ -31,7 +32,7 @@ main() {
     git clone --quiet "$repo" "$dir"
   fi
 
-  (cd "$dir" && bun install --frozen-lockfile --production --silent)
+  (cd "$dir" && bun install --frozen-lockfile --production)
   mkdir -p "$bin"
   ln -sfn "$dir/src/index.ts" "$bin/tix"
   echo "Installed $bin/tix"
