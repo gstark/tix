@@ -4,7 +4,7 @@
 
 `tix` tracks internal code tasks for agent coding. The tasks are private. They do not go to ClickUp or GitHub Issues.
 
-`tix` is a rewrite of the useful parts of [dex](https://github.com/dcramer/dex). It uses Convex as the backend. Convex gives one source of truth for many repositories and many machines.
+`tix` uses Convex as the backend. Convex gives one source of truth for many repositories and many machines.
 
 ## Requirements
 
@@ -22,7 +22,6 @@
 - Multiple users and browser login.
 - Web or mobile UI.
 - Sync with GitHub, Shortcut, or other trackers.
-- Migration of existing dex data.
 - An archive. Closed tasks stay in the `tasks` table.
 
 ## Decisions
@@ -255,7 +254,7 @@ Every command accepts `--json` and `--project <key>`. Argument parsing uses `nod
 
 ### Plan Import
 
-`tix plan <file.md>` must work like `dex plan`:
+`tix plan <file.md>` must work like this:
 
 - The name is the first `# ` heading. If the file has no heading, the name is the file name without `.md`.
 - The CLI removes a `Plan: ` prefix from the name. The match ignores case.
@@ -284,8 +283,8 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 ## Agent Skills
 
 - The Claude Code plugin is in `plugins/tix/`. `.claude-plugin/marketplace.json` lists it, so Claude Code can install it from the checkout.
-- `plugins/tix/skills/tix/SKILL.md` is adapted from the dex `dex` skill.
-- `plugins/tix/skills/tix-plan/SKILL.md` is adapted from the dex `dex-plan` skill.
+- `plugins/tix/skills/tix/SKILL.md` teaches the agent to track work with tix.
+- `plugins/tix/skills/tix-plan/SKILL.md` teaches the agent to turn a plan document into tasks.
 - `plugins/tix/.mcp.json` starts `tix mcp`.
 - Both skills must use `tix` commands only.
 
@@ -328,22 +327,9 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 │       └── tix-plan/SKILL.md
 ├── justfile             # Backend and machine setup
 ├── docs/specs/
+├── README.md
 └── package.json         # bin: tix
 ```
-
-## Reference Source
-
-A local dex checkout is at `/home/dev/dex`. Use these files as a reference. Do not copy the dex storage, sync, or archive code.
-
-| tix file | dex reference |
-|---|---|
-| `src/project.ts` | `src/core/project-key.ts` |
-| `src/plan.ts` | `src/core/plan-parser.ts` |
-| `src/format.ts` | `src/cli/tree-display.ts`, `src/cli/formatting.ts`, `src/cli/colors.ts` |
-| `convex/tasks.ts` rules | `src/core/task-service.ts`, `src/core/task-relationships.ts` |
-| `src/mcp/server.ts` | `src/mcp/server.ts`, `src/mcp/tools/` |
-| `src/cli/` help text | `src/cli/help.ts` |
-| Agent skills | `plugins/dex/skills/dex/`, `plugins/dex/skills/dex-plan/` |
 
 ## Stack
 

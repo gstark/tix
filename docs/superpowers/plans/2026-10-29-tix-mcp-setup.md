@@ -89,8 +89,6 @@ flowchart TD
 
 ### Task 1: MCP server
 
-Reference: `/home/dev/dex/src/mcp/server.ts`, `/home/dev/dex/src/mcp/test-helpers.ts`.
-
 **Files:**
 - Modify: `package.json`, `pnpm-lock.yaml`
 - Create: `src/mcp/server.ts`, `src/mcp/server.test.ts`
@@ -663,12 +661,10 @@ git commit -m "feat: add tix mcp"
 
 ### Task 3: Agent skills and plugin
 
-References: `/home/dev/dex/plugins/dex/skills/dex/SKILL.md`, `/home/dev/dex/plugins/dex/skills/dex-plan/SKILL.md`, `/home/dev/dex/.claude-plugin/marketplace.json`.
-
 **Files:**
 - Create: `.claude-plugin/marketplace.json`, `plugins/tix/.claude-plugin/plugin.json`, `plugins/tix/.mcp.json`, `plugins/tix/skills/tix/SKILL.md`, `plugins/tix/skills/tix-plan/SKILL.md`
 
-The skills use `tix` commands only. They leave out the dex parts that tix does not have: GitHub and Shortcut links, `--full`, `--no-commit`, and `npx` fallbacks.
+The skills use `tix` commands only.
 
 - [ ] **Step 1: Write `.claude-plugin/marketplace.json`**
 
@@ -1152,8 +1148,8 @@ Replace everything from `## Agent Skills` to the line before `## Project Layout`
 ## Agent Skills
 
 - The Claude Code plugin is in `plugins/tix/`. `.claude-plugin/marketplace.json` lists it, so Claude Code can install it from the checkout.
-- `plugins/tix/skills/tix/SKILL.md` is adapted from the dex `dex` skill.
-- `plugins/tix/skills/tix-plan/SKILL.md` is adapted from the dex `dex-plan` skill.
+- `plugins/tix/skills/tix/SKILL.md` teaches the agent to track work with tix.
+- `plugins/tix/skills/tix-plan/SKILL.md` teaches the agent to turn a plan document into tasks.
 - `plugins/tix/.mcp.json` starts `tix mcp`.
 - Both skills must use `tix` commands only.
 
