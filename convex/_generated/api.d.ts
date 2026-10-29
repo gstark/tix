@@ -10,7 +10,9 @@
 
 import type * as auth from "../auth.js";
 import type * as errors from "../errors.js";
+import type * as model from "../model.js";
 import type * as projects from "../projects.js";
+import type * as tasks from "../tasks.js";
 import type * as tokens from "../tokens.js";
 
 import type {
@@ -22,7 +24,9 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   errors: typeof errors;
+  model: typeof model;
   projects: typeof projects;
+  tasks: typeof tasks;
   tokens: typeof tokens;
 }>;
 
