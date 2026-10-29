@@ -90,7 +90,7 @@ export const update = mutation({
   handler: async (ctx, args) => {
     await requireMachine(ctx, args.token);
     const task = await findTask(ctx, args.id);
-    const patch: Partial<Doc<"tasks">> = {};
+    const patch: Partial<Pick<Doc<"tasks">, "name" | "description" | "priority" | "parentId">> = {};
 
     if (args.name !== undefined) {
       checkText("name", args.name, 1);

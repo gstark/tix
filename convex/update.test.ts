@@ -36,8 +36,35 @@ describe("tasks.update", () => {
     const task = await create("Task");
     const moved = await t.mutation(api.tasks.update, { token, id: task.shortId, parent: epic.shortId });
     expect(moved.parentShortId).toBe(epic.shortId);
+    const storedEpic = await t.query(api.tasks.get, { token, id: epic.shortId });
+    expect(storedEpic.children.map((child) => child.shortId)).toEqual([task.shortId]);
+
     const detached = await t.mutation(api.tasks.update, { token, id: task.shortId, parent: null });
     expect(detached.parentShortId).toBeNull();
+    const storedTask = await t.query(api.tasks.get, { token, id: task.shortId });
+    expect(storedTask.parentShortId).toBeNull();
+    const emptyEpic = await t.query(api.tasks.get, { token, id: epic.shortId });
+    expect(emptyEpic.children).toEqual([]);
+  });
+
+  it("allows a move to the current parent", async () => {
+    const { t, token, create } = await setup();
+    const epic = await create("Epic");
+    const task = await create("Task", { parent: epic.shortId });
+    await create("Subtask", { parent: task.shortId });
+    const moved = await t.mutation(api.tasks.update, { token, id: task.shortId, parent: epic.shortId });
+    expect(moved.parentShortId).toBe(epic.shortId);
+  });
+
+  it("rejects a grandchild as the parent", async () => {
+    const { t, token, create } = await setup();
+    const epic = await create("Epic");
+    const child = await create("Child", { parent: epic.shortId });
+    const grandchild = await create("Grandchild", { parent: child.shortId });
+    await expectCode(
+      t.mutation(api.tasks.update, { token, id: epic.shortId, parent: grandchild.shortId }),
+      "PARENT_CYCLE",
+    );
   });
 
   it("rejects the task as its own parent", async () => {
