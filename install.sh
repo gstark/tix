@@ -22,7 +22,9 @@ main() {
 
   if [ -d "$dir/.git" ]; then
     echo "Updating $dir"
-    git -C "$dir" pull --ff-only --quiet
+    # The installer owns this checkout, so it matches the remote default branch even after a force push.
+    git -C "$dir" fetch --quiet origin HEAD
+    git -C "$dir" reset --hard --quiet FETCH_HEAD
   else
     echo "Cloning $repo into $dir"
     mkdir -p "$(dirname "$dir")"

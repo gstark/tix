@@ -1,3 +1,4 @@
+/** @jsxImportSource @opentui/react */
 import type { ScrollBoxRenderable } from "@opentui/core";
 import type { RefObject } from "react";
 import type { Row, TaskRow } from "./board.ts";

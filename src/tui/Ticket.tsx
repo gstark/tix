@@ -1,3 +1,4 @@
+/** @jsxImportSource @opentui/react */
 import type { ScrollBoxRenderable, SyntaxStyle } from "@opentui/core";
 import type { ReactNode, RefObject } from "react";
 import type { TaskDetail, TaskListItem, TaskSummary } from "../client.ts";

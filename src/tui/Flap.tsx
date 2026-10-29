@@ -1,3 +1,4 @@
+/** @jsxImportSource @opentui/react */
 import { useState, useSyncExternalStore } from "react";
 import { color } from "./theme.ts";
 import { flapFrame, flapLength, pad } from "./flap.ts";

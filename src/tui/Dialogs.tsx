@@ -1,3 +1,4 @@
+/** @jsxImportSource @opentui/react */
 import type { TextareaRenderable } from "@opentui/core";
 import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import type { ReactNode } from "react";
