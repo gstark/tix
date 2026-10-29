@@ -266,22 +266,27 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 
 ## MCP Server
 
-`tix mcp` starts a stdio server with `@modelcontextprotocol/sdk`. It finds the project from its working directory. Each tool accepts an optional `project` argument.
+`tix mcp` starts a stdio server with `@modelcontextprotocol/sdk`. It finds the project from its working directory.
 
 | Tool | Purpose |
 |---|---|
-| `create_task` | Create a task. |
-| `list_tasks` | List tasks. It has the same filters as `tix list`. |
+| `create_task` | Create a task. Accepts an optional `project`. |
+| `list_tasks` | List tasks without descriptions. It has the same filters as `tix list`, and an optional `project`. |
+| `show_task` | Show one task with its description, subtasks, and blockers. |
 | `update_task` | Edit, start, complete, reopen, or delete a task through an `action` field. |
 | `manage_blockers` | Add or remove a blocker through an `action` field. |
 
+- The `commit` argument of `update_task` is a git ref. The server reads the SHA, branch, and message from git.
+- `update_task` rejects fields that do not belong to the action.
 - Tool errors must return `isError: true` with the message.
 - An error must not stop the server process.
 
 ## Agent Skills
 
+- The Claude Code plugin is in `plugins/tix/`. `.claude-plugin/marketplace.json` lists it, so Claude Code can install it from the checkout.
 - `plugins/tix/skills/tix/SKILL.md` is adapted from the dex `dex` skill.
 - `plugins/tix/skills/tix-plan/SKILL.md` is adapted from the dex `dex-plan` skill.
+- `plugins/tix/.mcp.json` starts `tix mcp`.
 - Both skills must use `tix` commands only.
 
 ## Project Layout
@@ -297,7 +302,7 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 │   ├── blockers.ts
 │   └── projects.ts
 ├── src/
-│   ├── index.ts         # Entry point. Plan 3 adds the route to MCP
+│   ├── index.ts         # Entry point
 │   ├── errors.ts        # TixError and exit codes
 │   ├── client.ts        # ConvexHttpClient, token, error mapping
 │   ├── config.ts
@@ -311,11 +316,17 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 │   │   ├── help.ts
 │   │   ├── main.ts      # Argument parsing and exit codes
 │   │   ├── commands.ts  # Command list and the help command
+│   │   ├── mcp.ts       # tix mcp
 │   │   └── <command>.ts # One file for each command
-│   └── mcp/server.ts
-├── plugins/tix/skills/
-│   ├── tix/SKILL.md
-│   └── tix-plan/SKILL.md
+│   └── mcp/server.ts    # 5 MCP tools
+├── .claude-plugin/marketplace.json
+├── plugins/tix/
+│   ├── .claude-plugin/plugin.json
+│   ├── .mcp.json        # Starts tix mcp
+│   └── skills/
+│       ├── tix/SKILL.md
+│       └── tix-plan/SKILL.md
+├── justfile             # Backend and machine setup
 ├── docs/specs/
 └── package.json         # bin: tix
 ```
@@ -352,8 +363,19 @@ Tests must sit next to their source files (`foo.ts` and `foo.test.ts`).
 
 ## Machine Setup
 
+The Convex project `tix` belongs to the team `your-team`.
+
+Backend, once:
+
+1. Log in to Convex with the account that owns `your-team`: `pnpm exec convex login`.
+2. Run `just setup`. It checks the login and the team, links the project, deploys, and prints the production URL.
+
+Each machine:
+
 1. Clone the repository.
-2. Run `pnpm install` and `pnpm link`.
-3. Run `npx convex run tokens:create '{"name":"<machine>"}'` from any machine with Convex access.
-4. Run `tix login --url <url> --token <token>`.
-5. Add `tix mcp` to the MCP configuration of the agent.
+2. Run `just install`. It links `src/index.ts` into `~/.local/bin/tix`.
+3. On a machine with Convex access, run `just token <machine>`. Convex shows the token once.
+4. Run `tix login --url <production URL> --token <token>`.
+5. Run `just agent`. It installs the plugin with the skills and the MCP server in Claude Code.
+
+Run `just` to list all recipes.
