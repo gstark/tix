@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireMachine } from "./auth";
 import type { TaskSummary } from "./model";
@@ -74,5 +75,44 @@ export const get = query({
     const blockers = (await Promise.all(blockerRows.map((row) => summaryOf(ctx, row.blockerId)))).filter(isSummary);
     const blocks = (await Promise.all(blocksRows.map((row) => summaryOf(ctx, row.blockedId)))).filter(isSummary);
     return { ...view, children, blockers, blocks };
+  },
+});
+
+export const update = mutation({
+  args: {
+    token: v.string(),
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    priority: v.optional(v.number()),
+    parent: v.optional(v.union(v.string(), v.null())),
+  },
+  handler: async (ctx, args) => {
+    await requireMachine(ctx, args.token);
+    const task = await findTask(ctx, args.id);
+    const patch: Partial<Doc<"tasks">> = {};
+
+    if (args.name !== undefined) {
+      checkText("name", args.name, 1);
+      patch.name = args.name;
+    }
+    if (args.description !== undefined) {
+      checkText("description", args.description, 0);
+      patch.description = args.description;
+    }
+    if (args.priority !== undefined) {
+      checkPriority(args.priority);
+      patch.priority = args.priority;
+    }
+    if (args.parent === null) {
+      patch.parentId = undefined;
+    } else if (args.parent !== undefined) {
+      const parent = await findTask(ctx, args.parent);
+      await checkParent(ctx, task.projectId, parent, task._id);
+      patch.parentId = parent._id;
+    }
+
+    await ctx.db.patch(task._id, patch);
+    return viewOf(ctx, { ...task, ...patch });
   },
 });
