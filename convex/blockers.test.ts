@@ -61,6 +61,17 @@ describe("blockers.add", () => {
     await expectCode(t.mutation(api.blockers.add, { token, blocked: a.shortId, blocker: c.shortId }), "BLOCKER_CYCLE");
   });
 
+  it("accepts a transitive edge that is not a cycle", async () => {
+    const { t, token, create } = await setup();
+    const a = await create("A");
+    const b = await create("B");
+    const c = await create("C");
+    await t.mutation(api.blockers.add, { token, blocked: b.shortId, blocker: a.shortId });
+    await t.mutation(api.blockers.add, { token, blocked: c.shortId, blocker: b.shortId });
+    const blocked = await t.mutation(api.blockers.add, { token, blocked: c.shortId, blocker: a.shortId });
+    expect(blocked.blockedBy.sort()).toEqual([a.shortId, b.shortId].sort());
+  });
+
   it("rejects a blocker in a different project", async () => {
     const { t, token, create } = await setup();
     const a = await create("A");
