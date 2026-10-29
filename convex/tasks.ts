@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import type { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireMachine } from "./auth";
 import { fail } from "./errors";
@@ -167,5 +167,32 @@ export const reopen = mutation({
     const patch = { completed: false, completedAt: undefined };
     await ctx.db.patch(task._id, patch);
     return viewOf(ctx, { ...task, ...patch });
+  },
+});
+
+export const remove = mutation({
+  args: { token: v.string(), id: v.string() },
+  handler: async (ctx, { token, id }) => {
+    await requireMachine(ctx, token);
+    const task = await findTask(ctx, id);
+    const doomed = [task, ...(await descendantsOf(ctx, task._id))];
+
+    // A Set because one row can link two deleted tasks.
+    const rowIds = new Set<Id<"blockers">>();
+    for (const { _id } of doomed) {
+      const asBlocker = await ctx.db
+        .query("blockers")
+        .withIndex("by_blocker", (q) => q.eq("blockerId", _id))
+        .collect();
+      const asBlocked = await ctx.db
+        .query("blockers")
+        .withIndex("by_blocked", (q) => q.eq("blockedId", _id))
+        .collect();
+      for (const row of [...asBlocker, ...asBlocked]) rowIds.add(row._id);
+    }
+
+    for (const rowId of rowIds) await ctx.db.delete(rowId);
+    for (const { _id } of doomed) await ctx.db.delete(_id);
+    return doomed.map((doomedTask) => doomedTask.shortId);
   },
 });
