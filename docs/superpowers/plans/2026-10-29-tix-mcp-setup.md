@@ -1048,7 +1048,7 @@ link: check-team
 
 # Deploy the backend to production and print the production URL
 deploy: link
-    {{convex}} deploy --cmd 'echo "Production URL: $TIX_URL"' --cmd-url-env-var-name TIX_URL
+    {{convex}} deploy --yes --cmd 'echo "Production URL: $TIX_URL"' --cmd-url-env-var-name TIX_URL
 
 # Make a token for one machine. Convex shows the token once
 token NAME: link
@@ -1234,7 +1234,7 @@ This task creates a Convex project and a production deployment in team `your-tea
 Run: `just setup`
 Expected: the recipe prints `Production URL: https://<name>.convex.cloud`. Write down the URL.
 
-If `convex deploy` asks a question, the user must answer it in the terminal.
+`deploy` uses `--yes`, because the recipe always deploys to production.
 
 - [ ] **Step 2: Install tix on this machine**
 

@@ -50,7 +50,7 @@ link: check-team
 
 # Deploy the backend to production and print the production URL
 deploy: link
-    {{convex}} deploy --cmd 'echo "Production URL: $TIX_URL"' --cmd-url-env-var-name TIX_URL
+    {{convex}} deploy --yes --cmd 'echo "Production URL: $TIX_URL"' --cmd-url-env-var-name TIX_URL
 
 # Make a token for one machine. Convex shows the token once
 token NAME: link
