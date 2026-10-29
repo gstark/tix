@@ -11,6 +11,13 @@ export default defineConfig({
           server: { deps: { inline: ["convex-test"] } },
         },
       },
+      {
+        test: {
+          name: "cli",
+          include: ["src/**/*.test.ts"],
+          environment: "node",
+        },
+      },
     ],
   },
 });
