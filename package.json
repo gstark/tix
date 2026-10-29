@@ -1,0 +1,21 @@
+{
+  "name": "tix",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "codegen": "convex dev --once --typecheck disable",
+    "typecheck": "tsc --noEmit -p convex",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "convex": "^1.48.0"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
+    "convex-test": "^0.0.66",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}
