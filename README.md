@@ -8,22 +8,37 @@
 - An MCP server. Run `tix mcp` to start it on stdio.
 - A Claude Code plugin with the `tix` and `tix-plan` skills.
 
-## Setup
+## Install
 
-Run `just` to list the recipes.
+The install needs git, Node 24 or later, and pnpm.
 
-Backend, once:
+1. Run the install script:
 
-1. Log in to Convex: `pnpm exec convex login`.
-2. Run `just setup`. It prints the production URL.
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/gstark/tix/main/install.sh | bash
+   ```
 
-Each machine:
+   The script does these steps:
+   - It clones the repository into `~/.local/share/tix`.
+   - It links `tix` into `~/.local/bin`.
+   - If Claude Code is installed, it installs the tix plugin with the skills and the MCP server.
+2. In a checkout with Convex access, run `just token <machine>`. Convex shows the token once.
+3. Run `tix login --url <production URL> --token <token>`.
+
+Run the install script again to update tix. You can set these variables:
+- `TIX_DIR`: the checkout directory.
+- `TIX_REPO`: the repository to clone.
+
+## Backend Setup
+
+Do this once:
 
 1. Clone the repository.
-2. Run `just install`.
-3. On a machine with Convex access, run `just token <machine>`.
-4. Run `tix login --url <production URL> --token <token>`.
-5. Run `just agent`.
+2. Run `pnpm install`.
+3. Log in to Convex: `pnpm exec convex login`.
+4. Run `just setup`. It prints the production URL.
+
+Run `just` to list the recipes.
 
 ## Development
 

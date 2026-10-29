@@ -326,6 +326,7 @@ The `tix-plan` skill tells the agent to create subtasks with `tix create --paren
 │       ├── tix/SKILL.md
 │       └── tix-plan/SKILL.md
 ├── justfile             # Backend and machine setup
+├── install.sh           # curl | bash install
 ├── docs/specs/
 ├── README.md
 └── package.json         # bin: tix
@@ -358,10 +359,15 @@ Backend, once:
 
 Each machine:
 
-1. Clone the repository.
-2. Run `just install`. It links `src/index.ts` into `~/.local/bin/tix`.
-3. On a machine with Convex access, run `just token <machine>`. Convex shows the token once.
-4. Run `tix login --url <production URL> --token <token>`.
-5. Run `just agent`. It installs the plugin with the skills and the MCP server in Claude Code.
+1. Run `curl -fsSL https://raw.githubusercontent.com/gstark/tix/main/install.sh | bash`.
+   - The script clones the repository into `~/.local/share/tix`, or updates it.
+   - It links `src/index.ts` into `~/.local/bin/tix`.
+   - If Claude Code is installed, it installs the plugin with the skills and the MCP server.
+2. In a checkout with Convex access, run `just token <machine>`. Convex shows the token once.
+3. Run `tix login --url <production URL> --token <token>`.
+
+The repository must be public, so the script and the clone work without a GitHub login. The machine tokens protect the backend.
+
+In a development checkout, `just install` and `just agent` do the same steps from that checkout.
 
 Run `just` to list all recipes.
