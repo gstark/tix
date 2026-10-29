@@ -1,9 +1,10 @@
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
+import type { QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
 import { requireMachine } from "./auth";
 import { fail } from "./errors";
-import type { TaskSummary } from "./model";
+import type { TaskSummary, TaskView } from "./model";
 import {
   checkParent,
   checkPriority,
@@ -194,5 +195,58 @@ export const remove = mutation({
     for (const rowId of rowIds) await ctx.db.delete(rowId);
     for (const { _id } of doomed) await ctx.db.delete(_id);
     return doomed.map((doomedTask) => doomedTask.shortId);
+  },
+});
+
+const filterValidator = v.union(v.literal("open"), v.literal("closed"), v.literal("all"), v.literal("ready"));
+
+type Filter = "open" | "closed" | "all" | "ready";
+
+/** Reads tasks for one project, or for all projects when `projectId` is null. */
+async function tasksFor(ctx: QueryCtx, projectId: Id<"projects"> | null, filter: Filter) {
+  const completed = filter === "closed";
+  const any = filter === "all";
+  if (projectId === null) {
+    return ctx.db
+      .query("tasks")
+      .withIndex("by_completed_priority", (q) => (any ? q : q.eq("completed", completed)))
+      .collect();
+  }
+  return ctx.db
+    .query("tasks")
+    .withIndex("by_project_completed_priority", (q) =>
+      any ? q.eq("projectId", projectId) : q.eq("projectId", projectId).eq("completed", completed),
+    )
+    .collect();
+}
+
+export const list = query({
+  args: {
+    token: v.string(),
+    projectKey: v.optional(v.string()),
+    filter: filterValidator,
+    allProjects: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args): Promise<TaskView[]> => {
+    await requireMachine(ctx, args.token);
+    let projectId: Id<"projects"> | null = null;
+    if (!args.allProjects) {
+      if (args.projectKey === undefined) fail("INVALID_INPUT", "projectKey is required without allProjects");
+      const project = await findProject(ctx, args.projectKey);
+      if (!project) return [];
+      projectId = project._id;
+    }
+
+    const keys = new Map<Id<"projects">, string>();
+    const views: TaskView[] = [];
+    for (const task of await tasksFor(ctx, projectId, args.filter)) {
+      let key = keys.get(task.projectId);
+      if (key === undefined) {
+        key = (await ctx.db.get(task.projectId))?.key ?? "";
+        keys.set(task.projectId, key);
+      }
+      views.push(await toView(ctx, task, key));
+    }
+    return args.filter === "ready" ? views.filter((view) => view.blockedBy.length === 0) : views;
   },
 });
