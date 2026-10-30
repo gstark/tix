@@ -245,6 +245,7 @@ export const KEYS: [string, [string, string][]][] = [
       ["b u", "Add or remove a blocker"],
       ["x", "Delete the task and its subtasks"],
       ["y", "Copy the short ID"],
+      ["drag", "Copy the text that you select with the mouse"],
     ],
   ],
 ];

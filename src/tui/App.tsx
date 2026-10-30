@@ -3,7 +3,7 @@ import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { KeyEvent, ScrollBoxRenderable } from "@opentui/core";
-import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/react";
+import { useKeyboard, useRenderer, useSelectionHandler, useTerminalDimensions } from "@opentui/react";
 import { useMemo, useRef, useState } from "react";
 import { api } from "../../convex/_generated/api.js";
 import type { ListFilter, TaskListItem } from "../client.ts";
@@ -100,6 +100,17 @@ export function App({ live, scope: initialScope, git, cwd, onQuit }: Props) {
     setToast({ text, tone, id });
     setTimeout(() => setToast((current) => (current?.id === id ? null : current)), tone === "ok" ? 3000 : 6000);
   };
+
+  const copyText = (text: string, done: string) => {
+    const copied = renderer.copyToClipboardOSC52(text);
+    flash(copied ? done : "This terminal does not let tix use the clipboard", copied ? "ok" : "error");
+  };
+
+  // tix takes the mouse, so the terminal has no selection for its own copy key. Copy the selection when the drag ends.
+  useSelectionHandler((selection) => {
+    const text = selection.getSelectedText();
+    if (text.trim() !== "") copyText(text, `Copied ${text.length} character${text.length === 1 ? "" : "s"}`);
+  });
 
   /** Runs a change. The live list shows the result, so only the toast is left to do. */
   const act = (done: string, run: () => Promise<unknown>) => {
@@ -299,9 +310,7 @@ export function App({ live, scope: initialScope, git, cwd, onQuit }: Props) {
       });
     },
     copy: () => {
-      if (item === null) return;
-      const copied = renderer.copyToClipboardOSC52(item.shortId);
-      flash(copied ? `Copied ${item.shortId}` : "This terminal does not let tix use the clipboard", copied ? "ok" : "error");
+      if (item !== null) copyText(item.shortId, `Copied ${item.shortId}`);
     },
     projects: () => {
       const choices: Choice[] = [
