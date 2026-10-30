@@ -13,7 +13,7 @@
 
 `tix tui` shows the tasks of the current project. Outside a git repository, or with `--all-projects`, it shows all projects. Convex sends each change at once, so you see the work of agents while they do it. When a status changes, its cell flips like a departures board.
 
-The left pane shows the task tree. The right pane shows the selected task, with the description and the result in Markdown. You can click rows, filters, links, and buttons, and scroll with the mouse wheel.
+The left pane shows the task tree. The right pane shows the selected task, with the description and the result in Markdown. You can click rows, filters, links, and buttons, and scroll with the mouse wheel. Drag the line between the panes to resize them. tix saves the list width in `ui.toml`, next to the config file.
 
 | Keys | Action |
 | --- | --- |

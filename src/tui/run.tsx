@@ -9,7 +9,14 @@ import { Live } from "./live.ts";
 import { color } from "./theme.ts";
 
 /** Opens the board on the alternate screen and returns when the user quits. */
-export async function runTui(options: { config: Config; scope: Scope; git: Git; cwd: string }): Promise<void> {
+export async function runTui(options: {
+  config: Config;
+  scope: Scope;
+  git: Git;
+  cwd: string;
+  savedBoardWidth: number | null;
+  onBoardWidth: (width: number) => Promise<void>;
+}): Promise<void> {
   const live = new Live(options.config);
   const renderer = await createCliRenderer({
     exitOnCtrlC: false,
@@ -19,7 +26,15 @@ export async function runTui(options: { config: Config; scope: Scope; git: Git; 
   });
   await new Promise<void>((resolve) => {
     createRoot(renderer).render(
-      <App live={live} scope={options.scope} git={options.git} cwd={options.cwd} onQuit={resolve} />,
+      <App
+        live={live}
+        scope={options.scope}
+        git={options.git}
+        cwd={options.cwd}
+        savedBoardWidth={options.savedBoardWidth}
+        onBoardWidth={options.onBoardWidth}
+        onQuit={resolve}
+      />,
     );
   });
   renderer.destroy();

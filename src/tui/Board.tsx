@@ -28,13 +28,13 @@ type Props = {
 export function Board({ rows, selectedId, focused, width, scrollRef, onSelect, onToggle, empty }: Props) {
   if (rows.length === 0) {
     return (
-      <box width={width} paddingLeft={2} paddingTop={1}>
+      <box width={width} flexShrink={0} paddingLeft={2} paddingTop={1}>
         <text fg={color.soot}>{empty}</text>
       </box>
     );
   }
   return (
-    <scrollbox ref={scrollRef} width={width} scrollbarOptions={{ visible: false }}>
+    <scrollbox ref={scrollRef} width={width} flexShrink={0} scrollbarOptions={{ visible: false }}>
       {rows.map((row, index) =>
         row.kind === "project" ? (
           <box key={`project-${row.key}`} height={1} marginTop={index === 0 ? 0 : 1} paddingLeft={CURSOR + 1}>

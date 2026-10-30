@@ -246,6 +246,7 @@ export const KEYS: [string, [string, string][]][] = [
       ["x", "Delete the task and its subtasks"],
       ["y", "Copy the short ID"],
       ["drag", "Copy the text that you select with the mouse"],
+      ["drag line", "Resize the list and the ticket"],
     ],
   ],
 ];

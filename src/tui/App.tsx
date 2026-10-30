@@ -14,15 +14,13 @@ import type { Choice, Field } from "./Dialogs.tsx";
 import { Confirm, Form, Help, Picker } from "./Dialogs.tsx";
 import type { Live } from "./live.ts";
 import { useConnected, useLive } from "./live.ts";
+import { clampBoardWidth, NARROW, resolveBoardWidth } from "./split.ts";
 import { color, markdownStyle, statusColor } from "./theme.ts";
 import { Ticket } from "./Ticket.tsx";
 
 export type Scope = { kind: "project"; key: string } | { kind: "all" };
 
 const FILTERS: ListFilter[] = ["open", "ready", "all", "closed"];
-
-/** Below this width the board and the ticket take turns on the full screen. */
-const NARROW = 100;
 
 type Dialog =
   | { kind: "help" }
@@ -32,7 +30,16 @@ type Dialog =
 
 type Toast = { text: string; tone: "ok" | "error"; id: number };
 
-type Props = { live: Live; scope: Scope; git: Git; cwd: string; onQuit: () => void };
+type Props = {
+  live: Live;
+  scope: Scope;
+  git: Git;
+  cwd: string;
+  /** The list width from the last drag, in columns. Null uses the default split. */
+  savedBoardWidth: number | null;
+  onBoardWidth: (width: number) => Promise<void>;
+  onQuit: () => void;
+};
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -49,7 +56,7 @@ function descendantCount(tasks: TaskListItem[], shortId: string): number {
   return kids.reduce((sum, kid) => sum + 1 + descendantCount(tasks, kid.shortId), 0);
 }
 
-export function App({ live, scope: initialScope, git, cwd, onQuit }: Props) {
+export function App({ live, scope: initialScope, git, cwd, savedBoardWidth: initialBoardWidth, onBoardWidth, onQuit }: Props) {
   const renderer = useRenderer();
   const syntaxStyle = useMemo(() => markdownStyle(renderer), [renderer]);
   const { width, height } = useTerminalDimensions();
@@ -67,6 +74,8 @@ export function App({ live, scope: initialScope, git, cwd, onQuit }: Props) {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [focus, setFocus] = useState<"board" | "ticket">("board");
+  const [savedBoardWidth, setSavedBoardWidth] = useState<number | null>(initialBoardWidth);
+  const savedBoardWidthRef = useRef(initialBoardWidth);
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const boardRef = useRef<ScrollBoxRenderable>(null);
@@ -91,7 +100,7 @@ export function App({ live, scope: initialScope, git, cwd, onQuit }: Props) {
   const task = detail.data?.shortId === item?.shortId ? detail.data : undefined;
 
   const narrow = width < NARROW;
-  const boardWidth = narrow ? width : Math.min(96, Math.max(48, Math.floor(width * 0.5)));
+  const boardWidth = resolveBoardWidth(width, savedBoardWidth);
 
   // Actions -----------------------------------------------------------------
 
@@ -104,6 +113,19 @@ export function App({ live, scope: initialScope, git, cwd, onQuit }: Props) {
   const copyText = (text: string, done: string) => {
     const copied = renderer.copyToClipboardOSC52(text);
     flash(copied ? done : "This terminal does not let tix use the clipboard", copied ? "ok" : "error");
+  };
+
+  const resizeList = (column: number) => {
+    const next = clampBoardWidth(width, column);
+    savedBoardWidthRef.current = next;
+    setSavedBoardWidth(next);
+    return next;
+  };
+
+  const commitListWidth = () => {
+    const next = savedBoardWidthRef.current;
+    if (next === null) return;
+    void onBoardWidth(next).catch((error: unknown) => flash(`Cannot save the list width: ${messageOf(error)}`, "error"));
   };
 
   // tix takes the mouse, so the terminal has no selection for its own copy key. Copy the selection when the drag ends.
@@ -503,12 +525,7 @@ export function App({ live, scope: initialScope, git, cwd, onQuit }: Props) {
           />
         )}
         {showTicket && (
-          <box
-            flexGrow={1}
-            // A border color turns the border on, so the narrow layout sets neither.
-            {...(narrow ? {} : { border: ["left"], borderColor: focus === "ticket" ? color.flap : color.rule })}
-            onMouseDown={() => setFocus("ticket")}
-          >
+          <box flexGrow={1} flexShrink={1} minWidth={0} onMouseDown={() => setFocus("ticket")}>
             <Ticket
               item={item}
               detail={task}
@@ -518,6 +535,9 @@ export function App({ live, scope: initialScope, git, cwd, onQuit }: Props) {
               onJump={jump}
             />
           </box>
+        )}
+        {!narrow && (
+          <Split column={boardWidth} ticketFocused={focus === "ticket"} onResize={resizeList} onCommit={commitListWidth} />
         )}
       </box>
       <text fg={color.rule} wrapMode="none" flexShrink={0}>
@@ -556,6 +576,74 @@ export function App({ live, scope: initialScope, git, cwd, onQuit }: Props) {
         />
       )}
     </box>
+  );
+}
+
+function Split({
+  column,
+  ticketFocused,
+  onResize,
+  onCommit,
+}: {
+  /** The terminal column of the line. */
+  column: number;
+  ticketFocused: boolean;
+  onResize: (column: number) => number;
+  onCommit: () => void;
+}) {
+  const renderer = useRenderer();
+  const [hot, setHot] = useState(false);
+  const pressed = useRef(false);
+  const moved = useRef(false);
+  const line = useRef(column);
+
+  const finish = (x: number) => {
+    if (!pressed.current) return;
+    const didMove = moved.current;
+    pressed.current = false;
+    moved.current = false;
+    const over = x === line.current;
+    setHot(over);
+    if (!over) renderer.setMousePointer("default");
+    if (didMove) onCommit();
+  };
+
+  return (
+    <box
+      position="absolute"
+      left={column}
+      top={0}
+      bottom={0}
+      width={1}
+      zIndex={2}
+      border={["left"]}
+      borderColor={hot || ticketFocused ? color.flap : color.rule}
+      onMouseOver={() => {
+        setHot(true);
+        renderer.setMousePointer("ew-resize");
+      }}
+      onMouseOut={() => {
+        if (pressed.current) return;
+        setHot(false);
+        renderer.setMousePointer("default");
+      }}
+      onMouseDown={(event) => {
+        if (event.button !== 0) return;
+        pressed.current = true;
+        moved.current = false;
+        line.current = column;
+        setHot(true);
+        renderer.setMousePointer("ew-resize");
+      }}
+      onMouseDrag={(event) => {
+        if (!pressed.current || event.button !== 0) return;
+        moved.current = true;
+        // event.x is the terminal column. The list width follows the pointer.
+        line.current = onResize(event.x);
+      }}
+      onMouseDragEnd={(event) => finish(event.x)}
+      onMouseUp={(event) => finish(event.x)}
+    />
   );
 }
 
